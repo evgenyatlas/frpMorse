@@ -1,7 +1,9 @@
 import K from 'kefir'
 import morseAlph from './morse.json'
+import msSpan from './msSpan.json'
 
-const SPAN = 400
+const DASH = '-'
+const DOT = '.'
 
 const keyUps = K.fromEvents(document, 'keyup')
 const keyDowns = K.fromEvents(document, 'keydown')
@@ -20,8 +22,8 @@ const signalEnds = signalStartsEnds.filter((ev) => ev === "end").map(Date.now)
 
 const spanStream = signalStarts.flatMapLatest((start) => signalEnds.map((end) => end - start))
 
-const dotsStream = spanStream.filter((v) => v <= SPAN).map(() => ".")
-const lineStream = spanStream.filter((v) => v > SPAN).map(() => "-")
+const dotsStream = spanStream.filter((v) => v <= msSpan.dotDash).map(_ => DOT)
+const lineStream = spanStream.filter((v) => v > msSpan.dotDash).map(_ => DASH)
 
 const dotsAndLines = K.merge([dotsStream, lineStream, enterKeyDowns])
 const endResult = dotsAndLines.bufferWhile(data => data !== 'enter').map(data => data.filter(str => str !== 'enter').join('')).log()
